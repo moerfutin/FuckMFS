@@ -29,7 +29,7 @@ MIT License
 
 ## 非Android手机
 
-不能用 (
+不能用
 
 ## 虚拟框架
 
