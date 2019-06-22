@@ -33,7 +33,7 @@ MIT License
 
 ## 虚拟框架
 
-VirtualXposed与太极不能用。因为adb不会把取证软件装到vxp和太极里。
+兼容VirtualXposed、太极等虚拟框架。如果你能让取证机器的adb把取证软件装到vxp和太极里。
 
 ## 最后
 
