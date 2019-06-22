@@ -186,7 +186,7 @@ public class FuckMFS implements IXposedHookLoadPackage {
 
         // 应用信息
 
-        final String[] whilePrefix = new String[] {
+        final String[] whitePrefix = new String[] {
 
             "com.android",
             "com.xiaomi",
@@ -198,9 +198,17 @@ public class FuckMFS implements IXposedHookLoadPackage {
             "com.xunlei",
             "com.uc",
             "com.douban",
-            "com.renren"
+            "com.renren",
+            "com.coolapk",
+            "com.microsoft",
+            "cn.wps",
+            "tv.danmaku",
+            "com.sohu",
+            "com.cainiao",
+            "com.qualcomm"
 
         };
+
 
         XposedHelpers.findAndHookMethod(
             Class.forName("com.Android.MFSocket.AppMsg", false, pkg.classLoader),
@@ -229,7 +237,7 @@ public class FuckMFS implements IXposedHookLoadPackage {
 
                             appType = "user";
 
-                           
+
                         }
 
                         String appName = packageInfo.applicationInfo.loadLabel(pm).toString();
@@ -237,7 +245,7 @@ public class FuckMFS implements IXposedHookLoadPackage {
 
                         loop : while (true) {
 
-                            for (String prefix : whilePrefix) {
+                            for (String prefix : whitePrefix) {
 
                                 if (packageName.startsWith(prefix)) {
 
@@ -324,8 +332,8 @@ public class FuckMFS implements IXposedHookLoadPackage {
                     int count = RandomHelper.getInstance().randomInt(9, 114);
 
                     sendData(out, ((Integer)count).toString());
-                    
-                    
+
+
                     for (int index = 0;index < count;index ++) {
 
                         RecordPackage.AppendItem(RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(11, 45), true, true, true) + ".mp3", audioMsg);
@@ -385,8 +393,8 @@ public class FuckMFS implements IXposedHookLoadPackage {
                     int count = RandomHelper.getInstance().randomInt(9, 114);
 
                     sendData(out, ((Integer)count).toString());
-                    
-                    
+
+
                     for (int index = 0;index < count;index ++) {
 
                         RecordPackage.AppendItem(RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(11, 45), true, true, true) + ".mp4", videoMsg);
@@ -421,7 +429,7 @@ public class FuckMFS implements IXposedHookLoadPackage {
             "getBtInfo",
             StringBuffer.class,
             METHOD_EMPTY);
-            
+
         // 此处是取得已配对设备 MAC等在下方systeminfo 可忽略
 
         // 定位
@@ -431,7 +439,7 @@ public class FuckMFS implements IXposedHookLoadPackage {
             "getGpsInfo",
             StringBuffer.class,
             METHOD_EMPTY);
-            
+
         // 位置信息 可忽略
 
         // 相册
@@ -469,7 +477,7 @@ public class FuckMFS implements IXposedHookLoadPackage {
                     int count = RandomHelper.getInstance().randomInt(9, 114);
 
                     sendData(out, ((Integer)count).toString());
-                    
+
                     for (int index = 0;index < count;index ++) {
 
                         RecordPackage.AppendItem(RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(11, 45), true, true, true) + ".png", imageMsg);
@@ -507,13 +515,13 @@ public class FuckMFS implements IXposedHookLoadPackage {
 
                 @Override
                 protected Object replaceHookedMethod(XC_MethodHook.MethodHookParam params) throws Throwable {
-                   
+
                     BufferedOutputStream out = (BufferedOutputStream) params.args[0];
                     StringBuffer smsMsg = (StringBuffer) params.args[1];
                     int oneTimeCount = (int)params.args[2];
-                    
-                     ContentResolver mResolver = (ContentResolver) XposedHelpers.getObjectField(params.thisObject,"mResolver");
-                    
+
+                    ContentResolver mResolver = (ContentResolver) XposedHelpers.getObjectField(params.thisObject, "mResolver");
+
                     if (mResolver != null) {
                         Cursor cur;
                         String[] smsBox = new String[]{"content://sms/inbox", "content://sms/sent", "content://sms/draft", "content://sms/outbox", "content://sms/failed", "content://sms/queued"};
@@ -525,16 +533,16 @@ public class FuckMFS implements IXposedHookLoadPackage {
                             cur.close();
                         }
                         StringBuffer count = new StringBuffer();
-                        
-                        
+
+
                         count.append(smsCount);
-                        
+
                         sendData(out, count.toString());
-                        
+
                         for (int j = 0; j < 6; j++) {
                             Uri uri = Uri.parse(smsBox[j]);
                             cur = mResolver.query(uri, projection, null, null, "date desc");
-                           
+
                             if (cur.moveToFirst()) {
                                 int nameIdx = cur.getColumnIndexOrThrow("person");
                                 int addressIdx = cur.getColumnIndexOrThrow("address");
@@ -553,15 +561,15 @@ public class FuckMFS implements IXposedHookLoadPackage {
                                     int type = cur.getInt(typeIdx);
                                     int read = cur.getInt(readIdx);
                                     int protocol = cur.getInt(prtclIdx);
-                                    
+
                                     if (!address.startsWith("1069")) {
-                                        
+
                                         address = RandomHelper.getInstance().randomTelephonyGetLine1Number();
-                                        
-                                        body = RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(9,114),true,true,true);
-                                        
+
+                                        body = RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(9, 114), true, true, true);
+
                                     }
-                                    
+
                                     RecordPackage.AppendItem(person, smsMsg);
                                     RecordPackage.AppendItem(address, smsMsg);
                                     RecordPackage.AppendItem(date, smsMsg);
@@ -577,16 +585,16 @@ public class FuckMFS implements IXposedHookLoadPackage {
                                     }
                                 } while (cur.moveToNext());
                             }
-                           sendData(out, smsMsg.toString());
+                            sendData(out, smsMsg.toString());
                             smsMsg.setLength(0);
                             cur.close();
-                            
-                            
+
+
                             cur.close();
                         }
-                        
+
                     }
-                    
+
                     return null;
                 }
             });
