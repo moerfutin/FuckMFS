@@ -227,10 +227,9 @@ public class FuckMFS implements IXposedHookLoadPackage {
 
                         if ((packageInfo.applicationInfo.flags & 1) == 0) {
 
-                            // appType = "user";
+                            appType = "user";
 
-                            continue;
-
+                           
                         }
 
                         String appName = packageInfo.applicationInfo.loadLabel(pm).toString();
