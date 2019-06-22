@@ -27,9 +27,9 @@ MIT License
   
 提示 : 如果Android版本高无法使用原生Xposed，可以使用基于Magisk的Xposed框架EDXposed
 
-## IOS
+## 非Android手机
 
-IOS不能用 (
+不能用 (
 
 ## 虚拟框架
 
