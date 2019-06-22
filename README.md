@@ -2,7 +2,9 @@
 
 去他妈的取证
 
-是一个 Xposed 模块  
+是一个 Xposed 模块 
+  
+最近出现了公共场合查手机的事情、收集到一个名为 MFSocket 的取证软件客户端。 副本 : [MFSocket.apk](MFSocket.apk?raw=true)
   
 功能 : 阻止读取联系人短信媒体文件和应用信息等并随机设备和网络信息。
 
@@ -19,7 +21,7 @@
 
 MIT License
 
-### 使用
+## 使用
 
 下载安装已编译的 [FuckMFS.apk](./FuckMFS.apk?raw=true) 并在Xposed安装器启用即可  
   
