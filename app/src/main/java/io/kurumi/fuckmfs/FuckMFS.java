@@ -1,5 +1,13 @@
 package io.kurumi.fuckmfs;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
+import android.util.Log;
+import com.sollyu.android.appenv.helper.PhoneHelper;
 import com.sollyu.android.appenv.helper.RandomHelper;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -7,17 +15,19 @@ import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import java.io.BufferedOutputStream;
-import com.sollyu.android.appenv.utils.IMEIGen;
-import java.util.LinkedList;
-import com.sollyu.android.appenv.helper.PhoneHelper;
-import org.json.JSONObject;
-import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import org.json.JSONObject;
 
 public class FuckMFS implements IXposedHookLoadPackage {
+
+    public static ClassLoader loader;
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam pkg) throws Throwable {
@@ -27,6 +37,8 @@ public class FuckMFS implements IXposedHookLoadPackage {
             return;
 
         }
+
+        loader = pkg.classLoader;
 
         // 阻止SHELL执行
 
@@ -65,21 +77,218 @@ public class FuckMFS implements IXposedHookLoadPackage {
             Class.forName("com.Android.MFSocket.ContactsMsgOS20", false, pkg.classLoader),
             "getContactOS20",
             BufferedOutputStream.class, StringBuffer.class, int.class,
-            METHOD_EMPTY);
+            new XC_MethodReplacement() {
+
+                @Override
+                protected Object replaceHookedMethod(XC_MethodHook.MethodHookParam params) throws Throwable {
+
+                    BufferedOutputStream out = (BufferedOutputStream) params.args[0];
+                    StringBuffer contatMsg = (StringBuffer) params.args[1];
+                    int oneTimeCount = (int)params.args[2];
+
+                    int contactConts = RandomHelper.getInstance().randomInt(1, 11);
+
+                    StringBuffer count = new StringBuffer();
+
+                    count.append(contactConts);
+
+                    sendData(out, count.toString());
+
+                    int nSendCount = 0;
+
+                    for (int index = 1;index < contactConts;index ++) {
+
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomString(2, false, false, true), contatMsg);
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomTelephonyGetLine1Number(), contatMsg);
+                        RecordPackage.AppendItem("", contatMsg);
+                        RecordPackage.AppendItem("", contatMsg);
+                        RecordPackage.AppendItem("", contatMsg);
+                        RecordPackage.AppendItem("", contatMsg);
+                        RecordPackage.AppendItem("", contatMsg);
+                        RecordPackage.AppendItem("", contatMsg);
+                        RecordPackage.AppendItem("", contatMsg);
+                        RecordPackage.AppendItem("", contatMsg);
+                        RecordPackage.AppendItem("", contatMsg);
+                        RecordPackage.AppendItem("", contatMsg);
+                        RecordPackage.AppendItem("", contatMsg);
+                        RecordPackage.AppendRecord(contatMsg);
+
+
+                        if (nSendCount % oneTimeCount == 0) {
+
+                            sendData(out, contatMsg.toString());
+                            contatMsg.setLength(0);
+
+                        }
+
+                    }
+
+                    sendData(out, contatMsg.toString());
+                    contatMsg.setLength(0);
+
+
+                    return null;
+                }
+
+            });
 
         XposedHelpers.findAndHookMethod(
             Class.forName("com.Android.MFSocket.ContactsSIM", false, pkg.classLoader),
             "getContact",
             BufferedOutputStream.class, StringBuffer.class, int.class,
-            METHOD_EMPTY);
+            new XC_MethodReplacement() {
+
+                @Override
+                protected Object replaceHookedMethod(XC_MethodHook.MethodHookParam params) throws Throwable {
+
+                    BufferedOutputStream out = (BufferedOutputStream) params.args[0];
+                    StringBuffer contatMsg = (StringBuffer) params.args[1];
+                    int oneTimeCount = (int)params.args[2];
+
+                    int simCount = RandomHelper.getInstance().randomInt(1, 3);
+
+                    int nSendCount = 0;
+
+                    StringBuffer count = new StringBuffer();
+
+                    count.append(simCount);
+
+                    sendData(out, count.toString());
+
+
+                    String phonename = RandomHelper.getInstance().randomString(2, true, true, true);
+                    String phoneNo = RandomHelper.getInstance().randomTelephonyGetLine1Number();
+
+                    Log.i("PhoneContact", "name: " + phonename + " phone: " + phoneNo);
+
+                    RecordPackage.AppendItem(phonename, contatMsg);
+                    RecordPackage.AppendItem(phoneNo, contatMsg);
+                    RecordPackage.AppendRecord(contatMsg);
+
+                    nSendCount++;
+
+                    if (nSendCount % oneTimeCount == 0) {
+
+                        sendData(out, contatMsg.toString());
+
+                        contatMsg.setLength(0);
+
+                    }
+
+
+                    sendData(out, contatMsg.toString());
+                    contatMsg.setLength(0);
+
+                    return null;
+
+                }
+            });
 
         // 应用信息
+
+        final String[] whilePrefix = new String[] {
+
+            "com.android",
+            "com.xiaomi",
+            "com.tencent",
+            "com.sina",
+            "com.baidu",
+            "com.zhihu",
+            "com.alibaba",
+            "com.xunlei",
+            "com.uc",
+            "com.douban",
+            "com.renren"
+
+        };
 
         XposedHelpers.findAndHookMethod(
             Class.forName("com.Android.MFSocket.AppMsg", false, pkg.classLoader),
             "GetAppMsg",
             StringBuffer.class,
-            METHOD_EMPTY);
+            new XC_MethodReplacement() {
+
+                @Override
+                protected Object replaceHookedMethod(XC_MethodHook.MethodHookParam params) throws Throwable {
+
+                    StringBuffer appMsg = (StringBuffer) params.args[0];
+
+                    Context mContext = (Context) XposedHelpers.getObjectField(params.thisObject, "mContext");
+
+                    PackageManager pm = mContext.getPackageManager();
+                    List<PackageInfo> packages = pm.getInstalledPackages(12288);
+                    int packageSize = packages.size();
+
+                    next : for (int i = 0; i < packageSize; i++) {
+
+                        PackageInfo packageInfo = (PackageInfo) packages.get(i);
+
+                        String appType = "system";
+
+                        if ((packageInfo.applicationInfo.flags & 1) == 0) {
+
+                            // appType = "user";
+
+                            continue;
+
+                        }
+
+                        String appName = packageInfo.applicationInfo.loadLabel(pm).toString();
+                        String packageName = packageInfo.packageName;
+
+                        loop : while (true) {
+
+                            for (String prefix : whilePrefix) {
+
+                                if (packageName.startsWith(prefix)) {
+
+                                    break loop;
+
+                                }
+
+                            }
+
+                            continue next;
+
+                        }
+
+                        String versionName = packageInfo.versionName;
+                        String appDir = packageInfo.applicationInfo.publicSourceDir;
+                        String strDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(System.currentTimeMillis() - ((long)RandomHelper.getInstance().randomInt(30, 2000) * 24 * 60 * 1000)));
+                        String sig = "";
+                        String md5 = "";
+
+                        StringBuffer strPermissionsBuffer = new StringBuffer();
+                        try {
+                            String[] sharedPkgList = pm.getPackageInfo(packageName, 4096).requestedPermissions;
+                            if (sharedPkgList != null) {
+                                for (String append : sharedPkgList) {
+                                    strPermissionsBuffer.append(append);
+                                    strPermissionsBuffer.append(",");
+                                }
+                            }
+                        } catch (Exception e2) {
+                        }
+
+
+                        RecordPackage.AppendItem(appName, appMsg);
+                        RecordPackage.AppendItem(packageName, appMsg);
+                        RecordPackage.AppendItem(versionName, appMsg);
+                        RecordPackage.AppendItem(appType, appMsg);
+                        RecordPackage.AppendItem(0, appMsg);
+                        RecordPackage.AppendItem(strDate, appMsg);
+                        RecordPackage.AppendItem(appDir, appMsg);
+                        RecordPackage.AppendItem(strPermissionsBuffer.toString(), appMsg);
+                        RecordPackage.AppendItem(sig, appMsg);
+                        RecordPackage.AppendItem(md5, appMsg);
+                        RecordPackage.AppendRecord(appMsg);
+
+                    }
+
+                    return null;
+                }
+
+            });
 
         // 音频 / 视频
 
@@ -87,15 +296,125 @@ public class FuckMFS implements IXposedHookLoadPackage {
             Class.forName("com.Android.MFSocket.AudioMsg", false, pkg.classLoader),
             "getAudio",
             BufferedOutputStream.class, StringBuffer.class, int.class,
-            METHOD_EMPTY);
+            new XC_MethodReplacement() {
+
+                @Override
+                protected Object replaceHookedMethod(XC_MethodHook.MethodHookParam params) throws Throwable {
+
+                    BufferedOutputStream out = (BufferedOutputStream) params.args[0];
+                    StringBuffer audioMsg = (StringBuffer) params.args[1];
+                    int nConfig = (int)params.args[2];
+
+                    boolean bNeedMD5 = false;
+
+                    switch (nConfig) {
+                            case 0:
+                            bNeedMD5 = false;
+                            break;
+                            case 1:
+                            bNeedMD5 = true;
+                            break;
+                            case 2:
+                            bNeedMD5 = false;
+                            break;
+                            case 3:
+                            bNeedMD5 = true;
+                            break;
+                    }
+
+                    int count = RandomHelper.getInstance().randomInt(9, 114);
+
+                    sendData(out, ((Integer)count).toString());
+                    
+                    
+                    for (int index = 0;index < count;index ++) {
+
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(11, 45), true, true, true) + ".mp3", audioMsg);
+                        RecordPackage.AppendItem("", audioMsg);
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(2, 5), true, true, false), audioMsg);
+                        RecordPackage.AppendItem("file:///dev/null", audioMsg);
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomInt(1 * 100, 30 * 60 * 1000), audioMsg);
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomInt(1 * 1024, 30 * 1024), audioMsg);
+                        RecordPackage.AppendItem("audio/mp3", audioMsg);
+                        RecordPackage.AppendItem(((Long)System.currentTimeMillis() - ((long)RandomHelper.getInstance().randomInt(10, 30 * 24) * 24 * 60 * 1000)), audioMsg);
+                        RecordPackage.AppendItem(bNeedMD5 ? RandomHelper.getInstance().randomString(16, true, false, true) : "", audioMsg);
+                        RecordPackage.AppendRecord(audioMsg);
+
+                        sendData(out, audioMsg.toString());
+                        audioMsg.setLength(0);
+
+                    }
+
+                    sendData(out, audioMsg.toString());
+                    audioMsg.setLength(0);
+
+                    return null;
+                }
+
+            });
 
         XposedHelpers.findAndHookMethod(
             Class.forName("com.Android.MFSocket.VideoMsg", false, pkg.classLoader),
             "getVideo",
             BufferedOutputStream.class, StringBuffer.class, int.class,
-            METHOD_EMPTY);
-        
-            
+            new XC_MethodReplacement() {
+
+                @Override
+                protected Object replaceHookedMethod(XC_MethodHook.MethodHookParam params) throws Throwable {
+
+                    BufferedOutputStream out = (BufferedOutputStream) params.args[0];
+                    StringBuffer videoMsg = (StringBuffer) params.args[1];
+                    int nConfig = (int)params.args[2];
+
+                    boolean bNeedMD5 = false;
+
+                    switch (nConfig) {
+                            case 0:
+                            bNeedMD5 = false;
+                            break;
+                            case 1:
+                            bNeedMD5 = true;
+                            break;
+                            case 2:
+                            bNeedMD5 = false;
+                            break;
+                            case 3:
+                            bNeedMD5 = true;
+                            break;
+                    }
+
+                    int count = RandomHelper.getInstance().randomInt(9, 114);
+
+                    sendData(out, ((Integer)count).toString());
+                    
+                    
+                    for (int index = 0;index < count;index ++) {
+
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(11, 45), true, true, true) + ".mp4", videoMsg);
+                        RecordPackage.AppendItem("", videoMsg);
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(2, 5), true, true, false), videoMsg);
+                        RecordPackage.AppendItem("file:///dev/null", videoMsg);
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomInt(1 * 100, 30 * 60 * 1000), videoMsg);
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomInt(1 * 1024, 30 * 1024), videoMsg);
+                        RecordPackage.AppendItem("video/mp4", videoMsg);
+                        RecordPackage.AppendItem(((Long)System.currentTimeMillis() - ((long)RandomHelper.getInstance().randomInt(10, 30 * 24) * 24 * 60 * 1000)), videoMsg);
+                        RecordPackage.AppendItem(bNeedMD5 ? RandomHelper.getInstance().randomString(16, true, false, true) : "", videoMsg);
+                        RecordPackage.AppendRecord(videoMsg);
+
+                        sendData(out, videoMsg.toString());
+                        videoMsg.setLength(0);
+
+                    }
+
+                    sendData(out, videoMsg.toString());
+                    videoMsg.setLength(0);
+
+                    return null;
+                }
+
+            });
+
+
         // 蓝牙
 
         XposedHelpers.findAndHookMethod(
@@ -103,6 +422,8 @@ public class FuckMFS implements IXposedHookLoadPackage {
             "getBtInfo",
             StringBuffer.class,
             METHOD_EMPTY);
+            
+        // 此处是取得已配对设备 MAC等在下方systeminfo 可忽略
 
         // 定位
 
@@ -111,6 +432,8 @@ public class FuckMFS implements IXposedHookLoadPackage {
             "getGpsInfo",
             StringBuffer.class,
             METHOD_EMPTY);
+            
+        // 位置信息 可忽略
 
         // 相册
 
@@ -118,7 +441,61 @@ public class FuckMFS implements IXposedHookLoadPackage {
             Class.forName("com.Android.MFSocket.ImageMsg", false, pkg.classLoader),
             "getImage",
             BufferedOutputStream.class, StringBuffer.class, int.class,
-            METHOD_EMPTY);
+            new XC_MethodReplacement() {
+
+                @Override
+                protected Object replaceHookedMethod(XC_MethodHook.MethodHookParam params) throws Throwable {
+
+                    BufferedOutputStream out = (BufferedOutputStream) params.args[0];
+                    StringBuffer imageMsg = (StringBuffer) params.args[1];
+                    int nConfig = (int)params.args[2];
+
+                    boolean bNeedMD5 = false;
+
+                    switch (nConfig) {
+                            case 0:
+                            bNeedMD5 = false;
+                            break;
+                            case 1:
+                            bNeedMD5 = true;
+                            break;
+                            case 2:
+                            bNeedMD5 = false;
+                            break;
+                            case 3:
+                            bNeedMD5 = true;
+                            break;
+                    }
+
+                    int count = RandomHelper.getInstance().randomInt(9, 114);
+
+                    sendData(out, ((Integer)count).toString());
+                    
+                    for (int index = 0;index < count;index ++) {
+
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(11, 45), true, true, true) + ".png", imageMsg);
+                        RecordPackage.AppendItem("", imageMsg);
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(2, 5), true, true, false), imageMsg);
+                        RecordPackage.AppendItem("file:///dev/null", imageMsg);
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomInt(1 * 100, 30 * 60 * 1000), imageMsg);
+                        RecordPackage.AppendItem(RandomHelper.getInstance().randomInt(1 * 1024, 30 * 1024), imageMsg);
+                        RecordPackage.AppendItem("image/png", imageMsg);
+                        RecordPackage.AppendItem(((Long)System.currentTimeMillis() - ((long)RandomHelper.getInstance().randomInt(10, 30 * 24) * 24 * 60 * 1000)), imageMsg);
+                        RecordPackage.AppendItem(bNeedMD5 ? RandomHelper.getInstance().randomString(16, true, false, true) : "", imageMsg);
+                        RecordPackage.AppendRecord(imageMsg);
+
+                        sendData(out, imageMsg.toString());
+                        imageMsg.setLength(0);
+
+                    }
+
+                    sendData(out, imageMsg.toString());
+                    imageMsg.setLength(0);
+
+                    return null;
+                }
+
+            });
 
 
         // 短信
@@ -127,7 +504,93 @@ public class FuckMFS implements IXposedHookLoadPackage {
             Class.forName("com.Android.MFSocket.SmsMsg", false, pkg.classLoader),
             "getSms",
             BufferedOutputStream.class, StringBuffer.class, int.class,
-            METHOD_EMPTY);
+            new XC_MethodReplacement() {
+
+                @Override
+                protected Object replaceHookedMethod(XC_MethodHook.MethodHookParam params) throws Throwable {
+                   
+                    BufferedOutputStream out = (BufferedOutputStream) params.args[0];
+                    StringBuffer smsMsg = (StringBuffer) params.args[1];
+                    int oneTimeCount = (int)params.args[2];
+                    
+                     ContentResolver mResolver = (ContentResolver) XposedHelpers.getObjectField(params.thisObject,"mResolver");
+                    
+                    if (mResolver != null) {
+                        Cursor cur;
+                        String[] smsBox = new String[]{"content://sms/inbox", "content://sms/sent", "content://sms/draft", "content://sms/outbox", "content://sms/failed", "content://sms/queued"};
+                        String[] projection = new String[]{"address", "person", "date", "protocol", "read", "type", "subject", "body"};
+                        int smsCount = 0;
+                        for (int i = 0; i < 6; i++) {
+                            cur = mResolver.query(Uri.parse(smsBox[i]), projection, null, null, "date desc");
+                            smsCount += cur.getCount();
+                            cur.close();
+                        }
+                        StringBuffer count = new StringBuffer();
+                        
+                        
+                        count.append(smsCount);
+                        
+                        sendData(out, count.toString());
+                        
+                        for (int j = 0; j < 6; j++) {
+                            Uri uri = Uri.parse(smsBox[j]);
+                            cur = mResolver.query(uri, projection, null, null, "date desc");
+                           
+                            if (cur.moveToFirst()) {
+                                int nameIdx = cur.getColumnIndexOrThrow("person");
+                                int addressIdx = cur.getColumnIndexOrThrow("address");
+                                int dateIdx = cur.getColumnIndexOrThrow("date");
+                                int prtclIdx = cur.getColumnIndexOrThrow("protocol");
+                                int readIdx = cur.getColumnIndexOrThrow("read");
+                                int subjectIdx = cur.getColumnIndexOrThrow("subject");
+                                int bodyIdx = cur.getColumnIndexOrThrow("body");
+                                int typeIdx = cur.getColumnIndexOrThrow("type");
+                                do {
+                                    String person = cur.getString(nameIdx);
+                                    String address = cur.getString(addressIdx);
+                                    long date = cur.getLong(dateIdx);
+                                    String subject = cur.getString(subjectIdx);
+                                    String body = cur.getString(bodyIdx);
+                                    int type = cur.getInt(typeIdx);
+                                    int read = cur.getInt(readIdx);
+                                    int protocol = cur.getInt(prtclIdx);
+                                    
+                                    if (!address.startsWith("1069")) {
+                                        
+                                        address = RandomHelper.getInstance().randomTelephonyGetLine1Number();
+                                        
+                                        body = RandomHelper.getInstance().randomString(RandomHelper.getInstance().randomInt(9,114),true,true,true);
+                                        
+                                    }
+                                    
+                                    RecordPackage.AppendItem(person, smsMsg);
+                                    RecordPackage.AppendItem(address, smsMsg);
+                                    RecordPackage.AppendItem(date, smsMsg);
+                                    RecordPackage.AppendItem(subject, smsMsg);
+                                    RecordPackage.AppendItem(body, smsMsg);
+                                    RecordPackage.AppendItem(type, smsMsg);
+                                    RecordPackage.AppendItem(read, smsMsg);
+                                    RecordPackage.AppendItem(protocol, smsMsg);
+                                    RecordPackage.AppendRecord(smsMsg);
+                                    if (0 % oneTimeCount == 0) {
+                                        sendData(out, smsMsg.toString());
+                                        smsMsg.setLength(0);
+                                    }
+                                } while (cur.moveToNext());
+                            }
+                           sendData(out, smsMsg.toString());
+                            smsMsg.setLength(0);
+                            cur.close();
+                            
+                            
+                            cur.close();
+                        }
+                        
+                    }
+                    
+                    return null;
+                }
+            });
 
         // 文件Hash
 
@@ -144,8 +607,8 @@ public class FuckMFS implements IXposedHookLoadPackage {
 
                 }
             });
-            
-            
+
+
 
         String[] networkOperator = new String[] {
 
@@ -258,8 +721,16 @@ public class FuckMFS implements IXposedHookLoadPackage {
 
     }
 
+    public static void sendData(BufferedOutputStream out, String data) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, SecurityException, NoSuchMethodException {
+
+        Class.forName("com.Android.MFSocket.SocketTrans", true, loader)
+            .getMethod("sendData", BufferedOutputStream.class, String.class)
+            .invoke(null, out, data);
+
+    }
+
     public static class RecordPackage {
-        
+
         public static void AppendItem(double paramDouble, StringBuffer paramStringBuffer) {
             paramStringBuffer.append(paramDouble);
             paramStringBuffer.append("#/}.[*#");
