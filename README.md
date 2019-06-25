@@ -36,3 +36,7 @@ MIT License
 ## 最后
 
 还是物理隔离安全 (
+
+## 交流
+
+[Telegram 群组](https://t.me/joinchat/AAAAAFfQog1d8m8YoTyrHg)
