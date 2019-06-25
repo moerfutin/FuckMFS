@@ -39,4 +39,4 @@ MIT License
 
 ## 交流
 
-[Telegram 群组](https://t.me/joinchat/AAAAAFfQog1d8m8YoTyrHg)
+[Telegram 群组](https://t.me/joinchat/M5LsLE86uw8vGFqEBNi4NA)
