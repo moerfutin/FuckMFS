@@ -12,7 +12,7 @@
 
 目前有三种不同类型的 MFSocket 应用  
   
-**一 : com.Android.MFSocket **  
+**一 : com.Android.MFSocket**  
   
 图标为旧版Android默认应用图标 默认安卓签名  
   
