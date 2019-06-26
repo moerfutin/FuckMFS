@@ -4,14 +4,45 @@
 
 是一个 Xposed 模块 
   
-最近出现了公共场合查手机的事情、收集到一个名为 MFSocket 的取证软件客户端。 副本 : [MFSocket.apk](MFSocket.apk?raw=true)
+最近出现了公共场合查手机的事情、收集到一个名为 MFSocket 的取证软件客户端。
   
 功能 : 阻止读取联系人短信媒体文件和应用信息等并随机设备和网络信息。
+
+## MFSocket 类型 / 版本
+
+目前有三种不同类型的 MFSocket 应用  
+  
+1. com.Android.MFSocket  
+  
+图标为旧版Android默认应用图标 默认安卓签名  
+  
+[查看所有版本](./mfsocket/0)  
+  
+最新版本为 1.1 即某人最近被查手机安装的应用 (虽然没有混淆、看起来很假、但是确实是从被查的手机里提取出来的)  
+
+2. com.Android.MFSocket / com.android.mfsocket  
+  
+图标为放大镜、有meiya的签名
+
+[查看所有版本](./mfsocket/1)  
+
+早期版本包名为 com.Android.MFSocket 后期为 com.android.mfsocket  
+  
+有混淆 比第一版提取了更多数据 : 日历、通话记录等等  还会读取 Telegram的聊天记录
+
+3. com.Android.MFSocket  
+  
+图标为小电脑  
+  
+[所有版本](./mfsocket/2)  
+  
+有混淆 比第二种多了四个二进制程序、貌似还能root手机  
 
 ## 更新
 
 06 / 23 : 增加联系人与SIM卡号随机生成、短信返回通知类、图片音频视频信息随机生成、应用列表返回国内白名单应用。  
 06 / 23 : 更新国内应用白名单列表
+06 / 26 : 更新对其他版本的适配 请更新
 
 ## 感谢
 
