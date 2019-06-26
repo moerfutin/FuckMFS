@@ -28,15 +28,15 @@
 
 早期版本包名为 com.Android.MFSocket 后期为 com.android.mfsocket  
   
-有混淆 比第一版提取了更多数据 : 日历、通话记录等等  还会读取 Telegram的聊天记录
-
+有混淆 比第一版提取了更多数据 : 日历、通话记录等等  还会**读取 Telegram的聊天记录**  
+  
 **三 : com.Android.MFSocket**  
   
 图标为小电脑  
   
 [查看](./mfsocket/2)  
   
-有混淆 比第二种多了四个二进制程序、貌似还能root手机  
+有混淆 比第二种多了四个二进制程序、貌似还能**root手机  **
 
 ## 更新
 
