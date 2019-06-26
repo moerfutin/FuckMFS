@@ -12,29 +12,29 @@
 
 目前有三种不同类型的 MFSocket 应用  
   
-一 : com.Android.MFSocket  
+* 一 : com.Android.MFSocket *  
   
 图标为旧版Android默认应用图标 默认安卓签名  
   
-[查看所有版本](./mfsocket/0)  
+[查看所有](./mfsocket/0)  
   
 最新版本为 1.1 即某人最近被查手机安装的应用 (虽然没有混淆、看起来很假、但是确实是从被查的手机里提取出来的)  
 
-二 : com.Android.MFSocket / com.android.mfsocket  
+*二 : com.Android.MFSocket / com.android.mfsocket*  
   
 图标为放大镜、有meiya的签名
 
-[查看所有版本](./mfsocket/1)  
+[查看所有](./mfsocket/1)  
 
 早期版本包名为 com.Android.MFSocket 后期为 com.android.mfsocket  
   
 有混淆 比第一版提取了更多数据 : 日历、通话记录等等  还会读取 Telegram的聊天记录
 
-三 : com.Android.MFSocket  
+*三 : com.Android.MFSocket*  
   
 图标为小电脑  
   
-[所有版本](./mfsocket/2)  
+[查看](./mfsocket/2)  
   
 有混淆 比第二种多了四个二进制程序、貌似还能root手机  
 
