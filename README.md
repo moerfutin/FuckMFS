@@ -64,6 +64,34 @@ MIT License
 
 因为历史遗留问题，您可以Fork一份，修改 PackageName 重新打包，并向太极提交兼容申请，这样就可以在太极使用了。
 
+## 另一种解决办法
+
+如果手机有ROOT，可以使用替换adbd (阻止通过adb) 与 使用系统应用占用空包名 来阻止安装MFSocket
+
+替换abbd :
+
+```
+$ su
+# cd /system/bin
+# mv adbd adbd.bak
+# echo "#!/system/bin/sh" > adbd
+# chmod +x adbd
+```
+
+复制空包 (已打包好)
+
+```
+$ su
+# cd ./FuckMFS/empty
+# setenforce 0
+# mount -o remount /dev/block/nandd /system
+# cp empty_mfsocket.apk /system/app
+# cp EmptyMFSocket.apk /system/app
+# chmod 644 /system/app/empty_mfsocket.apk
+# chmod 644 /system/app/EmptyMFSocket.apk
+# reboot
+```
+
 ## 最后
 
 还是物理隔离安全 (
