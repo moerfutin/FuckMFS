@@ -81,10 +81,10 @@ $ su
 复制空包 (已打包好)
 
 ```
+$ cd ./FuckMFS/empty
 $ su
-# cd ./FuckMFS/empty
 # setenforce 0
-# mount -o remount /dev/block/nandd /system
+# mount -o remount /system
 # cp empty_mfsocket.apk /system/app
 # cp EmptyMFSocket.apk /system/app
 # chmod 644 /system/app/empty_mfsocket.apk
